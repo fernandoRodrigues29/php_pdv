@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciamento de Produtos</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" href="estilo.css">
+</head>
+<body>
+    <nav>
+        <h1>Gerenciamento de Produtos</h1>
+        <div class="nav-menu">
+            <button class="nav-toggle-btn" id="navToggleBtn"><i class="fas fa-bars"></i></button>
+            <div class="user" id="userMenu">
+                Usuário <i class="fas fa-caret-down"></i>
+            </div>
+            <div class="dropdown" id="dropdown">
+                <a href="#" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Sair</a>
+            </div>
+        </div>
+    </nav>
+    <button class="toggle-btn" id="toggleBtn"><i class="fas fa-bars"></i></button>
+    <div class="container">
+        <div class="sidebar" id="sidebar">
+            <ul>
+                <li><a href="#"><i class="fas fa-home"></i><span class="sidebar-text"> Dashboard</span></a></li>
+                <li><a href="#"><i class="fas fa-box"></i><span class="sidebar-text"> Produtos</span></a></li>
+                <li><a href="#"><i class="fas fa-users"></i><span class="sidebar-text"> Usuários</span></a></li>
+                <li><a href="#"><i class="fas fa-cog"></i><span class="sidebar-text"> Configurações</span></a></li>
+            </ul>
+        </div>
+        <div class="main" id="main">
+            <div class="header">
+                <input type="text" id="searchInput" placeholder="Pesquisar...">
+                <button id="addBtn"><i class="fas fa-plus"></i> Cadastrar</button>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Preço</th>
+                        <th>Código de Barra</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="closeBtn">&times;</span>
+            <form id="productForm">
+                <input type="hidden" id="productId">
+                <input type="text" id="name" placeholder="Nome" required>
+                <input type="number" id="price" placeholder="Preço" required>
+                <input type="text" id="barcode" placeholder="Código de Barra" required>
+                <button type="submit">Salvar</button>
+                <button type="button" id="backBtn">Voltar</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // let products = [
+        //     { id: 1, name: 'Produto 1', price: 10.99, stock: 50, barcode: '123456789' },
+        //     { id: 2, name: 'Produto 2', price: 20.49, stock: 30, barcode: '987654321' }
+        // ];
+
+        let produtos_lista = [];
+        const API_URL = 'http://localhost:8383/api';
+
+
+        const tableBody = document.getElementById('tableBody');
+        const modal = document.getElementById('modal');
+        const productForm = document.getElementById('productForm');
+        const productIdInput = document.getElementById('productId');
+        const nameInput = document.getElementById('name');
+        const priceInput = document.getElementById('price');
+        const stockInput = document.getElementById('stock');
+        const barcodeInput = document.getElementById('barcode');
+        const searchInput = document.getElementById('searchInput');
+        const toggleBtn = document.getElementById('toggleBtn');
+        const navToggleBtn = document.getElementById('navToggleBtn');
+        const sidebar = document.getElementById('sidebar');
+        const main = document.getElementById('main');
+        const userMenu = document.getElementById('userMenu');
+        const dropdown = document.getElementById('dropdown');
+        const logoutBtn = document.getElementById('logoutBtn');
+
+        //api fetch
+        async function listarProdutos(){
+            try {
+                const res = await fetch(API_URL);
+                    if(!res.ok){
+                        throw new Error('Error ao carregar os produtos');
+                    }
+                        const lista = await res.json();
+                            return lista;
+            } catch (error) {
+                console.error(error)
+            }
+        }
+        //api cadastrar
+        async function cadastrarProdutos(data){
+            try {
+                const res = await fetch(`${API_URL}/produto`,{
+                    method: 'POST',
+                    headers:{
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data) 
+                });
+                    
+            } catch (error) {
+                console.error(error)
+            }
+        }        
+        //api atualizar
+        async function atualizarProdutos(data){
+            try {
+                const res = await fetch(`${API_URL}/produto`,{
+                    method: 'PUT',
+                    headers:{
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data) 
+                });
+                    
+            } catch (error) {
+                console.error(error)
+            }
+        }
+        //api excluir
+         async function excluirProdutos(data){
+            try {
+                const res = await fetch(`${API_URL}/produto`,{
+                    method: 'DELETE',
+                    headers:{
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data) 
+                });
+                    
+            } catch (error) {
+                console.error(error)
+            }
+        }                 
+        async function carregarTable(filteredProducts = null){
+            try {
+
+                const products = filteredProducts || await listarProdutos();
+                this.produtos_lista = products;
+                tableBody.innerHTML = '';
+
+                if(products.length === 0){
+                    tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Nenhum produto encontrado</td></tr>';
+                    return;
+                }
+
+                console.log('produtos:',products);
+                
+                products.data.forEach(product => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${product.name}</td>
+                        <td>${product.price}</td>
+                        <td>${product.barcode}</td>
+                        <td class="actions">
+                            <button class="edit" onclick="editProduct(${product.id})"><i class="fas fa-edit"></i></button>
+                            <button class="delete" onclick="deleteProduct(${product.id})"><i class="fas fa-trash"></i></button>
+                        </td>
+                    `;
+                    tableBody.appendChild(row);
+            });
+            } catch (error) {
+              console.error('ERROR:',error);  
+            }
+        }
+
+        function renderTable(filteredProducts = products) {
+            tableBody.innerHTML = '';
+            filteredProducts.forEach(product => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${product.name}</td>
+                    <td>${product.price}</td>
+                    <td>${product.stock}</td>
+                    <td>${product.barcode}</td>
+                    <td class="actions">
+                        <button class="edit" onclick="editProduct(${product.id})"><i class="fas fa-edit"></i></button>
+                        <button class="delete" onclick="deleteProduct(${product.id})"><i class="fas fa-trash"></i></button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        function showModal() {
+            modal.style.display = 'flex';
+        }
+
+        function hideModal() {
+            modal.style.display = 'none';
+            productForm.reset();
+            productIdInput.value = '';
+        }
+
+        function editProduct(id) {
+            const product = this.produtos_lista.data.find(p => p.id == id);
+            
+            if (product) {
+                productIdInput.value = id;
+                nameInput.value = product.name;
+                priceInput.value = product.price;
+                // stockInput.value = product.stock;
+                barcodeInput.value = product.barcode;
+                showModal();
+            }
+        }
+
+        async function deleteProduct(id) {
+            this.produtos_lista.data = this.produtos_lista.data.filter(p => p.id !== id);
+            await excluirProdutos({id:id});
+            // renderTable();
+             carregarTable(this.produtos_lista);
+        }
+
+        document.getElementById('addBtn').addEventListener('click', () => {
+            productIdInput.value = '';
+            showModal();
+        });
+
+        document.getElementById('closeBtn').addEventListener('click', hideModal);
+        document.getElementById('backBtn').addEventListener('click', hideModal);
+
+        productForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = parseInt(productIdInput.value);
+            const newProduct = {
+                // id: id || products.length + 1,
+                id: id || null,
+                name: nameInput.value,
+                price: parseFloat(priceInput.value),
+                // stock: parseInt(stockInput.value),
+                barcode: barcodeInput.value
+            };
+
+            if (id) {
+                const index = this.produtos_lista.data.findIndex(p => p.id == id);
+                this.produtos_lista.data[index] = newProduct;
+
+                await atualizarProdutos(newProduct);
+            } else {
+
+                await cadastrarProdutos(newProduct);
+                this.produtos_lista.data.push(newProduct);
+            }
+
+            // renderTable();
+            carregarTable(this.produtos_lista);
+            hideModal();
+        });
+
+        searchInput.addEventListener('input', () => {
+            const query = searchInput.value.toLowerCase();
+            const filtered = products.filter(p => 
+                p.name.toLowerCase().includes(query) || 
+                p.barcode.toLowerCase().includes(query)
+            );
+            renderTable(filtered);
+        });
+
+        toggleBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('hidden');
+            main.classList.toggle('expanded');
+        });
+
+        navToggleBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('collapsed');
+            main.classList.toggle('expanded');
+        });
+
+        userMenu.addEventListener('click', () => {
+            dropdown.classList.toggle('show');
+        });
+
+        logoutBtn.addEventListener('click', () => {
+            alert('Usuário desconectado');
+            // Aqui você pode adicionar lógica de logout
+        });
+
+        // Fechar dropdown ao clicar fora
+        document.addEventListener('click', (e) => {
+            if (!userMenu.contains(e.target) && !dropdown.contains(e.target)) {
+                dropdown.classList.remove('show');
+            }
+        });
+
+        // renderTable();
+        carregarTable();
+    </script>
+</body>
+</html>
