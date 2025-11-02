@@ -266,11 +266,14 @@
 
         searchInput.addEventListener('input', () => {
             const query = searchInput.value.toLowerCase();
-            const filtered = products.filter(p => 
+            
+            const filtered = this.produtos_lista.data.filter(p => 
                 p.name.toLowerCase().includes(query) || 
                 p.barcode.toLowerCase().includes(query)
             );
-            renderTable(filtered);
+            // renderTable(filtered);
+            this.produtos_lista.data = filtered;
+            carregarTable(this.produtos_lista);
         });
 
         toggleBtn.addEventListener('click', () => {
