@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciamento de Produtos</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+        }
+
+        nav {
+            background-color: #2c3e50;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .nav-menu {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            position: relative;
+        }
+
+        .nav-toggle-btn, .toggle-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 5px 10px;
+        }
+
+        .user {
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        .user:hover {
+            background-color: #34495e;
+        }
+
+        .dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-radius: 4px;
+            min-width: 150px;
+            z-index: 1001;
+        }
+
+        .dropdown.show {
+            display: block;
+        }
+
+        .dropdown a {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            color: #333;
+            text-decoration: none;
+            transition: background-color 0.3s;
+        }
+
+        .dropdown a:hover {
+            background-color: #f8f9fa;
+        }
+
+        .dropdown i {
+            margin-right: 8px;
+        }
+
+        .toggle-btn {
+            display: none;
+            position: fixed;
+            top: 70px;
+            left: 10px;
+            z-index: 999;
+            background-color: #2c3e50;
+            border-radius: 4px;
+        }
+
+        .container {
+            display: flex;
+            margin-top: 60px;
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: #2c3e50;
+            color: white;
+            transition: all 0.3s ease;
+            height: calc(100vh - 60px);
+            position: fixed;
+            left: 0;
+            top: 60px;
+        }
+
+        .sidebar.hidden {
+            transform: translateX(-100%);
+        }
+
+        .sidebar.collapsed {
+            width: 60px;
+        }
+
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar li {
+            border-bottom: 1px solid #34495e;
+        }
+
+        .sidebar a {
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            color: white;
+            text-decoration: none;
+            transition: background-color 0.3s;
+        }
+
+        .sidebar a:hover {
+            background-color: #34495e;
+        }
+
+        .sidebar i {
+            width: 20px;
+            margin-right: 10px;
+        }
+
+        .sidebar.collapsed .sidebar-text {
+            display: none;
+        }
+
+        .sidebar.collapsed i {
+            margin-right: 0;
+        }
+
+        .main {
+            flex: 1;
+            padding: 20px;
+            margin-left: 250px;
+            transition: margin-left 0.3s ease;
+        }
+
+        .main.expanded {
+            margin-left: 60px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            gap: 15px;
+        }
+
+        .header input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            max-width: 400px;
+        }
+
+        .header button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .header button:hover {
+            background-color: #0056b3;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+
+        .actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        .edit, .delete {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 3px;
+            font-size: 14px;
+        }
+
+        .edit {
+            color: #007bff;
+        }
+
+        .edit:hover {
+            background-color: #e3f2fd;
+        }
+
+        .delete {
+            color: #dc3545;
+        }
+
+        .delete:hover {
+            background-color: #f8d7da;
+        }
+
+        .modal {
+            display: flex;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            padding: 20px;
+            border-radius: 8px;
+            width: 400px;
+            max-width: 90%;
+            position: relative;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            position: absolute;
+            right: 15px;
+            top: 10px;
+        }
+
+        .close:hover {
+            color: black;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        form input {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        form button {
+            padding: 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        form button[type="submit"] {
+            background-color: #007bff;
+            color: white;
+        }
+
+        form button[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+
+        form button[type="button"] {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        form button[type="button"]:hover {
+            background-color: #545b62;
+        }
+
+        @media (max-width: 768px) {
+            .toggle-btn {
+                display: block;
+            }
+
+            .main {
+                margin-left: 0;
+            }
+
+            .main.expanded {
+                margin-left: 0;
+            }
+
+            .header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .header input {
+                max-width: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        const API_URL = 'http://localhost:8383/api';
+
+        // Componente Modal
+        function ProductModal({ show, product, onSave, onClose }) {
+            const [formData, setFormData] = useState({
+                id: null,
+                name: '',
+                price: '',
+                barcode: ''
+            });
+
+            useEffect(() => {
+                if (product) {
+                    setFormData({ ...product });
+                } else {
+                    setFormData({
+                        id: null,
+                        name: '',
+                        price: '',
+                        barcode: ''
+                    });
+                }
+            }, [product]);
+
+            const handleSubmit = (e) => {
+                e.preventDefault();
+                onSave({ ...formData });
+            };
+
+            const handleChange = (e) => {
+                const { name, value } = e.target;
+                setFormData(prev => ({
+                    ...prev,
+                    [name]: value
+                }));
+            };
+
+            if (!show) return null;
+
+            return React.createElement('div', { className: 'modal' },
+                React.createElement('div', { className: 'modal-content' },
+                    React.createElement('span', { 
+                        className: 'close', 
+                        onClick: onClose 
+                    }, '×'),
+                    React.createElement('form', { onSubmit: handleSubmit },
+                        React.createElement('input', {
+                            type: 'hidden',
+                            name: 'id',
+                            value: formData.id || ''
+                        }),
+                        React.createElement('input', {
+                            type: 'text',
+                            name: 'name',
+                            value: formData.name,
+                            onChange: handleChange,
+                            placeholder: 'Nome',
+                            required: true
+                        }),
+                        React.createElement('input', {
+                            type: 'number',
+                            name: 'price',
+                            value: formData.price,
+                            onChange: handleChange,
+                            placeholder: 'Preço',
+                            step: '0.01',
+                            required: true
+                        }),
+                        React.createElement('input', {
+                            type: 'text',
+                            name: 'barcode',
+                            value: formData.barcode,
+                            onChange: handleChange,
+                            placeholder: 'Código de Barra',
+                            required: true
+                        }),
+                        React.createElement('button', { type: 'submit' }, 'Salvar'),
+                        React.createElement('button', { 
+                            type: 'button', 
+                            onClick: onClose 
+                        }, 'Voltar')
+                    )
+                )
+            );
+        }
+
+        // Componente Sidebar
+        function Sidebar({ isVisible, isCollapsed }) {
+            const sidebarClass = `sidebar ${!isVisible ? 'hidden' : ''} ${isCollapsed ? 'collapsed' : ''}`;
+
+            return React.createElement('div', { className: sidebarClass },
+                React.createElement('ul', null,
+                    React.createElement('li', null,
+                        React.createElement('a', { href: '#' },
+                            React.createElement('i', { className: 'fas fa-home' }),
+                            React.createElement('span', { className: 'sidebar-text' }, ' Dashboard')
+                        )
+                    ),
+                    React.createElement('li', null,
+                        React.createElement('a', { href: '#' },
+                            React.createElement('i', { className: 'fas fa-box' }),
+                            React.createElement('span', { className: 'sidebar-text' }, ' Produtos')
+                        )
+                    ),
+                    React.createElement('li', null,
+                        React.createElement('a', { href: '#' },
+                            React.createElement('i', { className: 'fas fa-users' }),
+                            React.createElement('span', { className: 'sidebar-text' }, ' Usuários')
+                        )
+                    ),
+                    React.createElement('li', null,
+                        React.createElement('a', { href: '#' },
+                            React.createElement('i', { className: 'fas fa-cog' }),
+                            React.createElement('span', { className: 'sidebar-text' }, ' Configurações')
+                        )
+                    )
+                )
+            );
+        }
+
+        // Componente Principal
+        function App() {
+            const [products, setProducts] = useState([]);
+            const [filteredProducts, setFilteredProducts] = useState([]);
+            const [searchQuery, setSearchQuery] = useState('');
+            const [showModal, setShowModal] = useState(false);
+            const [selectedProduct, setSelectedProduct] = useState(null);
+            const [sidebarVisible, setSidebarVisible] = useState(true);
+            const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+            const [showDropdown, setShowDropdown] = useState(false);
+
+            const dropdownRef = useRef(null);
+            const userMenuRef = useRef(null);
+
+            // Carregar produtos
+            useEffect(() => {
+                loadProducts();
+                setupEventListeners();
+            }, []);
+
+            // Filtrar produtos quando searchQuery mudar
+            useEffect(() => {
+                filterProducts();
+            }, [searchQuery, products]);
+
+            const apiRequest = async (method, endpoint, data = null) => {
+                try {
+                    const url = endpoint ? `${API_URL}${endpoint}` : API_URL;
+                    const options = {
+                        method: method,
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    };
+                    
+                    if (data) {
+                        options.body = JSON.stringify(data);
+                    }
+
+                    const response = await fetch(url, options);
+                    if (!response.ok) {
+                        throw new Error(`Erro na requisição: ${response.status}`);
+                    }
+                    return await response.json();
+                } catch (error) {
+                    console.error('Erro na API:', error);
+                    throw error;
+                }
+            };
+
+            const loadProducts = async () => {
+                try {
+                    const response = await apiRequest('GET', '');
+                    setProducts(response.data || []);
+                } catch (error) {
+                    console.error('Erro ao carregar produtos:', error);
+                }
+            };
+
+            const filterProducts = () => {
+                if (!searchQuery.trim()) {
+                    setFilteredProducts(products);
+                    return;
+                }
+
+                const query = searchQuery.toLowerCase();
+                const filtered = products.filter(product =>
+                    product.name.toLowerCase().includes(query) ||
+                    product.barcode.toLowerCase().includes(query)
+                );
+                setFilteredProducts(filtered);
+            };
+
+            const openModal = () => {
+                setSelectedProduct(null);
+                setShowModal(true);
+            };
+
+            const closeModal = () => {
+                setShowModal(false);
+                setSelectedProduct(null);
+            };
+
+            const editProduct = (product) => {
+                setSelectedProduct(product);
+                setShowModal(true);
+            };
+
+            const handleSave = async (productData) => {
+                try {
+                    if (productData.id) {
+                        // Atualizar produto existente
+                        await apiRequest('PUT', '/produto', productData);
+                        setProducts(prev => 
+                            prev.map(p => p.id === productData.id ? productData : p)
+                        );
+                    } else {
+                        // Criar novo produto
+                        const newProduct = await apiRequest('POST', '/produto', productData);
+                        setProducts(prev => [...prev, newProduct]);
+                    }
+                    
+                    closeModal();
+                } catch (error) {
+                    console.error('Erro ao salvar produto:', error);
+                    alert('Erro ao salvar produto. Verifique o console para mais detalhes.');
+                }
+            };
+
+            const deleteProduct = async (id) => {
+                if (confirm('Tem certeza que deseja excluir este produto?')) {
+                    try {
+                        await apiRequest('DELETE', '/produto', { id });
+                        setProducts(prev => prev.filter(p => p.id !== id));
+                    } catch (error) {
+                        console.error('Erro ao excluir produto:', error);
+                        alert('Erro ao excluir produto. Verifique o console para mais detalhes.');
+                    }
+                }
+            };
+
+            const toggleSidebar = () => {
+                setSidebarVisible(!sidebarVisible);
+            };
+
+            const toggleSidebarCollapse = () => {
+                setSidebarCollapsed(!sidebarCollapsed);
+            };
+
+            const toggleDropdown = () => {
+                setShowDropdown(!showDropdown);
+            };
+
+            const logout = () => {
+                alert('Usuário desconectado');
+                setShowDropdown(false);
+            };
+
+            const formatPrice = (price) => {
+                return parseFloat(price).toFixed(2).replace('.', ',');
+            };
+
+            const setupEventListeners = () => {
+                const handleClickOutside = (e) => {
+                    if (userMenuRef.current && dropdownRef.current &&
+                        !userMenuRef.current.contains(e.target) && 
+                        !dropdownRef.current.contains(e.target)) {
+                        setShowDropdown(false);
+                    }
+                };
+
+                document.addEventListener('click', handleClickOutside);
+                
+                // Cleanup
+                return () => {
+                    document.removeEventListener('click', handleClickOutside);
+                };
+            };
+
+            const mainClass = `main ${!sidebarVisible || sidebarCollapsed ? 'expanded' : ''}`;
+            const dropdownClass = `dropdown ${showDropdown ? 'show' : ''}`;
+
+            return React.createElement('div', null,
+                // Navbar
+                React.createElement('nav', null,
+                    React.createElement('h1', null, 'Gerenciamento de Produtos'),
+                    React.createElement('div', { className: 'nav-menu' },
+                        React.createElement('button', {
+                            className: 'nav-toggle-btn',
+                            onClick: toggleSidebarCollapse
+                        }, React.createElement('i', { className: 'fas fa-bars' })),
+                        React.createElement('div', {
+                            ref: userMenuRef,
+                            className: 'user',
+                            onClick: toggleDropdown
+                        }, 'Usuário ', React.createElement('i', { className: 'fas fa-caret-down' })),
+                        React.createElement('div', {
+                            ref: dropdownRef,
+                            className: dropdownClass
+                        }, React.createElement('a', {
+                            href: '#',
+                            onClick: (e) => {
+                                e.preventDefault();
+                                logout();
+                            }
+                        }, React.createElement('i', { className: 'fas fa-sign-out-alt' }), ' Sair'))
+                    )
+                ),
+
+                // Botão toggle para mobile
+                React.createElement('button', {
+                    className: 'toggle-btn',
+                    onClick: toggleSidebar
+                }, React.createElement('i', { className: 'fas fa-bars' })),
+
+                // Container principal
+                React.createElement('div', { className: 'container' },
+                    // Sidebar
+                    React.createElement(Sidebar, {
+                        isVisible: sidebarVisible,
+                        isCollapsed: sidebarCollapsed
+                    }),
+                    
+                    // Conteúdo principal
+                    React.createElement('div', { className: mainClass },
+                        React.createElement('div', { className: 'header' },
+                            React.createElement('input', {
+                                type: 'text',
+                                value: searchQuery,
+                                onChange: (e) => setSearchQuery(e.target.value),
+                                placeholder: 'Pesquisar...'
+                            }),
+                            React.createElement('button', {
+                                onClick: openModal
+                            }, React.createElement('i', { className: 'fas fa-plus' }), ' Cadastrar')
+                        ),
+
+                        // Tabela de produtos
+                        React.createElement('table', null,
+                            React.createElement('thead', null,
+                                React.createElement('tr', null,
+                                    React.createElement('th', null, 'Nome'),
+                                    React.createElement('th', null, 'Preço'),
+                                    React.createElement('th', null, 'Código de Barra'),
+                                    React.createElement('th', null, 'Ações')
+                                )
+                            ),
+                            React.createElement('tbody', null,
+                                filteredProducts.length === 0 ?
+                                    React.createElement('tr', null,
+                                        React.createElement('td', {
+                                            colSpan: 4,
+                                            style: { textAlign: 'center' }
+                                        }, 'Nenhum produto encontrado')
+                                    ) :
+                                    filteredProducts.map(product =>
+                                        React.createElement('tr', { key: product.id },
+                                            React.createElement('td', null, product.name),
+                                            React.createElement('td', null, `R$ ${formatPrice(product.price)}`),
+                                            React.createElement('td', null, product.barcode),
+                                            React.createElement('td', { className: 'actions' },
+                                                React.createElement('button', {
+                                                    className: 'edit',
+                                                    onClick: () => editProduct(product)
+                                                }, React.createElement('i', { className: 'fas fa-edit' })),
+                                                React.createElement('button', {
+                                                    className: 'delete',
+                                                    onClick: () => deleteProduct(product.id)
+                                                }, React.createElement('i', { className: 'fas fa-trash' }))
+                                            )
+                                        )
+                                    )
+                            )
+                        )
+                    )
+                ),
+
+                // Modal
+                React.createElement(ProductModal, {
+                    show: showModal,
+                    product: selectedProduct,
+                    onSave: handleSave,
+                    onClose: closeModal
+                })
+            );
+        }
+
+        // Renderizar a aplicação
+        ReactDOM.render(React.createElement(App), document.getElementById('root'));
+    </script>
+</body>
+</html>
