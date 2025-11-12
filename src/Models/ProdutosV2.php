@@ -4,7 +4,7 @@ namespace App\Models;
  use PDOException;
  use App\Models\Constantes;
 
- class Produtos
+ class ProdutosV2
  {
     private PDO $pdo;
     public function __construct()
@@ -53,7 +53,7 @@ namespace App\Models;
       
          if($stmt->execute()){
             return [
-               'status'=>201,
+               'status'=>200,
                'msg'=>'Produto cadastrado com sucesso',
                'id'=>$this->pdo->lastInsertId()
             ];
@@ -154,21 +154,23 @@ namespace App\Models;
          }
 
          $sql = 'UPDATE products SET '. implode(', ',$campos).' WHERE id = :id';
+        
          $stmt = $this->pdo->prepare($sql);
-         
+                         
          //loop para preencher os dados
          foreach($valores as $key=>$value){
-            $paramType = str_contains($key, 'price') ? PDO::PARAM_STR : PDO::PARAM_STR;
-            $stmt->bindValue($key, $value, $paramType);
+            // $paramType = str_contains($key, 'price') ? PDO::PARAM_STR : PDO::PARAM_STR;
+            // $stmt->bindValue($key, $value, $paramType);
+            $stmt->bindValue($key, $value, PDO::PARAM_STR);
          }
-
+         
          if($stmt->execute()){
             return [
                'status'=>200,
                'msg'=>'Produto atualizado com sucesso',
             ];
          }
-
+        
          return [
             'status'=>500,
             'msg'=>'Erro ao atualizar o produto'

@@ -20,6 +20,7 @@ class apiProdutos{
             $pd = new ProdutoController();
                 $dados = json_decode(file_get_contents('php://input'), true);  
                     return $pd->editar($dados);
+                    
         } catch (\Throwable $th) {
             echo json_encode(['code'=>500,'msg'=>'error:'.$th->getMessage()]);
         }
@@ -41,6 +42,7 @@ class apiProdutos{
             $pd = new ProdutoController();
               $dados = json_decode(file_get_contents('php://input'), true);  
                 // var_dump($dados);
+                // return $pd->excluir($dados['id']);
                 return $pd->excluir($dados['id']);
         } catch (\Throwable $th) {
             echo json_encode(['code'=>500,'msg'=>'error:'.$th->getMessage()]);

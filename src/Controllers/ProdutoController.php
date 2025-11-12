@@ -1,13 +1,13 @@
 <?php
 namespace App\Controllers;
 
-use App\Models\Produtos;
+use App\Models\ProdutosV2;
 
 class ProdutoController{
    private $pridutoModel;
     public function __construct()
     {
-        $this->produtoModel = new Produtos();
+        $this->produtoModel = new ProdutosV2();
     }
 
     public function handleRequest(){
@@ -51,7 +51,7 @@ class ProdutoController{
     private function delete(){}
 
     public function listarTudo(){
-        $mApp = new Produtos();
+        $mApp = new ProdutosV2();
           return $mApp->listarTudo();
             //echo json_encode(['controller/InicioController']);
     }
@@ -59,15 +59,15 @@ class ProdutoController{
 
     }
     public function excluir($id){
-        $mApp = new Produtos();
+        $mApp = new ProdutosV2();
             return $mApp->excluir($id);
     }
     public function editar($dados){
-         $mApp = new Produtos();
+         $mApp = new ProdutosV2();
             return $mApp->editar($dados);
     }
     public function cadastrar($dados){
-                 $mApp = new Produtos();
+                 $mApp = new ProdutosV2();
                     return $mApp->cadastrar($dados);
     }
 }

@@ -15,10 +15,12 @@ use App\Api\apiProdutos;
                     $apiProdutor->cadastrar();
                 }
                 if($method == 'PUT'){
-                    $apiProdutor->atualizar();
+                   $r = $apiProdutor->atualizar();
+                    echo json_encode($r);
                 }
                 if($method == 'DELETE'){
-                    $apiProdutor->excluir();
+                    $r = $apiProdutor->excluir();
+                        echo json_encode($r);
                 }
         }else{
             $apiProdutor = new apiProdutos();

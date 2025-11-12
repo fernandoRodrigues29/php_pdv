@@ -6,6 +6,9 @@
     <title>Gerenciamento de Produtos</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <!-- Scripts do Vue Toastification (apenas os necessários) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vue-toastification@2/dist/index.css">
+    <script src="https://cdn.jsdelivr.net/npm/vue-toastification@2/dist/index.umd.js"></script>
     <style>
         * {
             margin: 0;
@@ -353,6 +356,16 @@
                 max-width: none;
             }
         }
+
+        .Vue-Toastification__toast--success {
+            background: #28a745 !important;
+        }
+        .Vue-Toastification__toast--error {
+            background: #dc3545 !important;
+        }
+        .Vue-Toastification__toast--info {
+            background: #007bff !important;
+        }
     </style>
 </head>
 <body>
@@ -447,13 +460,13 @@
             </div>
         </div>
     </div>
-
+<!-- PROBLEMA COM O TOAST, CORRIGIR MAIS TARDE -->
     <script>
         const { createApp } = Vue;
         
         const API_URL = 'http://localhost:8383/api';
 
-        createApp({
+        const app = createApp({
             data() {
                 return {
                     products: [],
@@ -480,10 +493,11 @@
                 async loadProducts() {
                     try {
                         const response = await this.apiRequest('GET', '');
-                        this.products = response.data || [];
+                        this.products = response.data.data || [];
                         this.filteredProducts = [...this.products];
                     } catch (error) {
                         console.error('Erro ao carregar produtos:', error);
+                        this.$toast.error('Erro ao carregar produtos.');
                     }
                 },
 
@@ -553,23 +567,27 @@
                 async handleSave() {
                     try {
                         if (this.formData.id) {
-                            // Atualizar produto existente
                             await this.apiRequest('PUT', '/produto', this.formData);
                             const index = this.products.findIndex(p => p.id === this.formData.id);
                             if (index !== -1) {
+                                console.log('dados do form:',this.formData);
                                 this.products.splice(index, 1, { ...this.formData });
                             }
+                            // this.$toast.success('Produto atualizado com sucesso!');
+                            alert('Produto atualizado com sucesso!');
                         } else {
-                            // Criar novo produto
                             const newProduct = await this.apiRequest('POST', '/produto', this.formData);
                             this.products.push(newProduct);
+                            // this.$toast.success('Produto cadastrado com sucesso!');
+                            alert('Produto cadastrado com sucesso!');
                         }
                         
                         this.filterProducts();
                         this.closeModal();
                     } catch (error) {
                         console.error('Erro ao salvar produto:', error);
-                        alert('Erro ao salvar produto. Verifique o console para mais detalhes.');
+                        // this.$toast.error('Erro ao salvar produto. Tente novamente.');
+                        alert('Erro ao salvar produto. Tente novamente.');
                     }
                 },
 
@@ -579,9 +597,12 @@
                             await this.apiRequest('DELETE', '/produto', { id });
                             this.products = this.products.filter(p => p.id !== id);
                             this.filterProducts();
+                            // this.$toast.success('Produto excluído com sucesso!');
+                            alert('Produto excluído com sucesso!');
                         } catch (error) {
                             console.error('Erro ao excluir produto:', error);
-                            alert('Erro ao excluir produto. Verifique o console para mais detalhes.');
+                            // this.$toast.error('Erro ao excluir produto. Tente novamente.');
+                            alert('Erro ao excluir produto. Tente novamente.');
                         }
                     }
                 },
@@ -599,7 +620,7 @@
                 },
 
                 logout() {
-                    alert('Usuário desconectado');
+                    this.$toast.info('Usuário desconectado');
                     this.showDropdown = false;
                 },
 
@@ -620,7 +641,22 @@
                     });
                 }
             }
-        }).mount('#app');
+        });
+
+        // Registrar o plugin com o nome global correto
+        if (window.VueToastificationPlugin) {
+            app.use(window.VueToastificationPlugin.default || window.VueToastificationPlugin, {
+                timeout: 3000,
+                position: 'top-right',
+                transition: 'Vue-Toastification__bounce',
+                maxToasts: 5,
+                newestOnTop: true
+            });
+        } else {
+            console.warn('Vue Toastification não carregou corretamente. Verifique o CDN.');
+        }
+
+        app.mount('#app');
     </script>
 </body>
 </html>

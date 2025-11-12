@@ -57,13 +57,14 @@ class ApiRouter
     {
         switch ($this->method) {
             case 'POST':
-                $apiProdutos->cadastrar();
+                 $dadosRetornados = $apiProdutos->cadastrar();
+                 echo json_encode($dadosRetornados);
             break;
             case 'PUT':
-                $apiProdutos->atualizar();
+               echo json_encode($apiProdutos->atualizar());
             break;
             case 'DELETE':
-                $apiProdutos->excluir();
+                echo json_encode($apiProdutos->excluir());
             break;
             case 'GET':
                 //area para adicionar pesquisa
