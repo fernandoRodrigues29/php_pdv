@@ -3,7 +3,7 @@
 require_once __DIR__."/../vendor/autoload.php";
 
 use App\Api\apiProdutos;
-
+use App\Controllers\VendasController;
 class ApiRouter
 {
     private $method;
@@ -33,6 +33,7 @@ class ApiRouter
             }
 
             $apiProdutos = new apiProdutos();
+            $apiVendas = new VendasController();
 
             //Roteamento baseado em método HTTP e recurso
             switch (true) {
