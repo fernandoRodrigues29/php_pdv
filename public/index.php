@@ -3,7 +3,8 @@
 require_once __DIR__."/../vendor/autoload.php";
 
 use App\Api\apiProdutos;
-use App\Controllers\VendasController;
+// use App\Controllers\VendasController;
+
 class ApiRouter
 {
     private $method;
@@ -25,6 +26,7 @@ class ApiRouter
     public function route() : void
     {
         header('Content-Type: application/json');
+        
         try {
             //verifica se é uma rota API
             if(($this->parts[0] ?? '') !== 'api'){
@@ -33,13 +35,15 @@ class ApiRouter
             }
 
             $apiProdutos = new apiProdutos();
-            $apiVendas = new VendasController();
-
+            // $apiVendas = new VendasController();
             //Roteamento baseado em método HTTP e recurso
             switch (true) {
                 case ($this->parts[1] ?? '') == 'produto':
                     $this->handleProdutoRoutes($apiProdutos);
                 break;
+                // case ($this->parts[1] ?? '') == 'venda':
+                //     $this->handleProdutoRoutes($apiVendas);
+                // break;
                 default:
                     # Lista todos os produtos por padrão
                     if($this->method == 'GET'){
@@ -54,22 +58,22 @@ class ApiRouter
             $this->sendError(500,'Erro interno do servidor');
         }
     }
-    private function handleProdutoRoutes(apiProdutos $apiProdutos): void
+    private function handleProdutoRoutes($api): void
     {
         switch ($this->method) {
             case 'POST':
-                 $dadosRetornados = $apiProdutos->cadastrar();
+                 $dadosRetornados = $api->cadastrar();
                  echo json_encode($dadosRetornados);
             break;
             case 'PUT':
-               echo json_encode($apiProdutos->atualizar());
+               echo json_encode($api->atualizar());
             break;
             case 'DELETE':
-                echo json_encode($apiProdutos->excluir());
+                echo json_encode($api->excluir());
             break;
             case 'GET':
                 //area para adicionar pesquisa
-                $apiProdutos->listar();
+                $api->listar();
             break;
             default:
                 $this->sendError(405, 'Método não permitido');

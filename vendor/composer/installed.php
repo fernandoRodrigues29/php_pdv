@@ -29,12 +29,12 @@
             'dev_requirement' => true,
         ),
         'nikic/php-parser' => array(
-            'pretty_version' => 'v5.6.1',
-            'version' => '5.6.1.0',
+            'pretty_version' => 'v5.6.2',
+            'version' => '5.6.2.0',
             'type' => 'library',
             'install_path' => __DIR__ . '/../nikic/php-parser',
             'aliases' => array(),
-            'reference' => 'f103601b29efebd7ff4a1ca7b3eeea9e3336a2a2',
+            'reference' => '3a454ca033b9e06b63282ce19562e892747449bb',
             'dev_requirement' => true,
         ),
         'phar-io/manifest' => array(

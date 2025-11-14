@@ -4,21 +4,13 @@ namespace App\Controllers;
 use App\Models\Sales;
 
 class VendasController{
+
+    public $vendaModel;
     public function __construct()
     {
         $this->vendaModel = new Sales();
     }
-
-    private function get(){
-        $rs = $this->vendaModel->listarTudo();
-        echo json_encode([
-            'status'=>200,
-            'data'=>$rs,
-            'total' => count($rs)
-        ]);
-    }
-    
-    public function listarVenda(){
+    public function listar(){
         $rs = $this->vendaModel->listarTudo();
         return  json_encode([
             'status'=>200,
