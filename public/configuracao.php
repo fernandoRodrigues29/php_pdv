@@ -1,48 +1,35 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerenciamento de Produtos</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    <!-- Scripts do Vue Toastification (apenas os necessários) -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vue-toastification@2/dist/index.css">
-    <script src="https://cdn.jsdelivr.net/npm/vue-toastification@2/dist/index.umd.js"></script>
-    <link rel="stylesheet" href="./partes/estilo.css">
-    
-    <?php 
-        if($pagina == 'vendas.php'){
-            echo "<link rel='stylesheet' href='./partes/vendas.css'>";
-        }  
-    ?>
-
-</head>
-<body>
-    <div id="app">
-        <?php include './partes/barra_horizontal.php'?>
-
-        <div class="container">
-            <?php include './partes/barra_lateral.php'?>
-                <div class="main" :class="{ 'expanded': !sidebarVisible || sidebarCollapsed }">
-                        <div class="header">
-                            <input 
-                                type="text" 
-                                v-model="searchQuery" 
-                                placeholder="Pesquisar..."
-                                @input="filterProducts"
-                            >
-                            <button @click="openModal">
-                                <i class="fas fa-plus"></i> Cadastrar
-                            </button>
-                        </div>
-                        <?php include "$pagina";?>
-                
-                </div>
-        </div>
-
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Preço</th>
+                            <th>Código de Barra</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-if="filteredProducts.length === 0">
+                            <td colspan="4" style="text-align: center;">
+                                Nenhum produto encontrado
+                            </td>
+                        </tr>
+                        <tr v-for="product in filteredProducts" :key="product.id">
+                            <td>{{ product.name }}</td>
+                            <td>R$ {{ formatPrice(product.price) }}</td>
+                            <td>{{ product.barcode }}</td>
+                            <td class="actions">
+                                <button class="edit" @click="editProduct(product)">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="delete" @click="deleteProduct(product.id)">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
         <!-- Modal -->
-        <!-- <div v-if="showModal" class="modal">
+        <div v-if="showModal" class="modal">
             <div class="modal-content">
                 <span class="close" @click="closeModal">&times;</span>
                 <form @submit.prevent="handleSave">
@@ -54,14 +41,12 @@
                     <button type="button" @click="closeModal">Voltar</button>
                 </form>
             </div>
-        </div> -->
-    </div>
+        </div>
 <!-- PROBLEMA COM O TOAST, CORRIGIR MAIS TARDE -->
-   <?php if($pagina <> 'vendas.php'){ ?>
-    <script>
+    <!-- <script>
         const { createApp } = Vue;
         
-        const API_URL = 'http://localhost:8383/api.php/api';
+        const API_URL = 'http://localhost:8383/api';
 
         const app = createApp({
             data() {
@@ -254,11 +239,4 @@
         }
 
         app.mount('#app');
-    </script>
-      <?php 
-      }else{ 
-        echo '<script src="./vendas.js"></script>';
-      } 
-      ?>
-</body>
-</html>
+    </script> -->

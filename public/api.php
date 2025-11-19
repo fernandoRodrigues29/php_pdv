@@ -27,9 +27,14 @@ class ApiRouter
     {
         header('Content-Type: application/json');
         
+
+        // var_dump($this->parts);
+        // exit;
+    
+    
         try {
             //verifica se é uma rota API
-            if(($this->parts[0] ?? '') !== 'api'){
+            if(($this->parts[1] ?? '') !== 'api'){
                 $this->sendError(404, 'Rota não encontrada');
                 return;
             }
@@ -38,7 +43,7 @@ class ApiRouter
             // $apiVendas = new VendasController();
             //Roteamento baseado em método HTTP e recurso
             switch (true) {
-                case ($this->parts[1] ?? '') == 'produto':
+                case ($this->parts[2] ?? '') == 'produto':
                     $this->handleProdutoRoutes($apiProdutos);
                 break;
                 // case ($this->parts[1] ?? '') == 'venda':

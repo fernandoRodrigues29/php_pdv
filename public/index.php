@@ -1,6 +1,33 @@
 <?php
 
-require_once "main.php";
+// $requestUri = filter_var($_SERVER['REQUEST_URI'] ?? '', FILTER_SANITIZE_URL);
+
+ 
+$requestUri = filter_var($_SERVER['REQUEST_URI'] ?? '', FILTER_SANITIZE_URL);
+ $path = parse_url($requestUri, PHP_URL_PATH);
+  $parts = explode('/',$path);
+   $parts = array_filter($parts);
+    $parts = array_values($parts);
+        // var_dump($parts);
+        $pagina = '';
+        switch ($parts[0]) {
+            case 'produtos':
+                $pagina = 'configuracao.php';
+            break;
+            case 'vendas':
+                $pagina = 'vendas.php';
+                // $pagina = 'teste.php';
+            break;
+            
+            default:
+            $pagina = 'configuracao.php';
+            break;
+        }
+        require_once "main.php";
+
+// require_once "main.php";
+
+
 
 //require_once __DIR__."/../vendor/autoload.php";
 
